@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موقع سلمى طيبة اللملم 2026</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
@@ -17,6 +16,7 @@
 
     <div class="main-wrapper">
         <aside class="sidebar">
+            
             <div class="clock-card">
                 <h3><i class="far fa-clock"></i> التوقيت الحالي</h3>
                 <div id="digital-clock" class="digital-clock">00:00:00</div>
@@ -29,6 +29,33 @@
                     <li>جارِ التحميل...</li>
                 </ul>
             </div>
+
+            <div class="radio-card">
+                <div class="radio-header">
+                    <h3><i class="fas fa-broadcast-tower"></i> إذاعة القرآن الكريم</h3>
+                    <span id="live-indicator" class="live-badge">مباشر</span>
+                </div>
+                
+                <div class="radio-content">
+                    <p id="radio-status">اضغط للاستماع بقلب خاشع</p>
+                    
+                    <audio id="quran-player" preload="none">
+                        <source src="https://webradio.tda.dz/Coran_64K.mp3" type="audio/mpeg">
+                    </audio>
+            
+                    <button id="radio-btn" class="radio-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+                
+                <div id="sound-wave" class="sound-wave hidden">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+            </div>
         </aside>
 
         <div class="container">
@@ -39,28 +66,28 @@
 
             <main>
                 <div class="controls">
-                    <button id="start-btn" class="btn primary"><i class="fas fa-microphone"></i> تسجيل</button>
+                    <button id="start-btn" class="btn primary"><i class="fas fa-microphone"></i> تسجيل مستمر</button>
                     <button id="stop-btn" class="btn danger" disabled><i class="fas fa-stop"></i> إيقاف</button>
-                    <button id="clear-btn" class="btn secondary"><i class="fas fa-eraser"></i> مسح</button>
+                    <button id="clear-btn" class="btn secondary"><i class="fas fa-eraser"></i> مسح النص</button>
                 </div>
 
-                <p id="status" class="status-text">جاهز للتسجيل...</p>
+                <p id="status" class="status-text">الجهاز جاهز.. ابدأ الحديث</p>
 
                 <div class="text-area-container">
-                    <textarea id="final-text" placeholder="تحدثي الآن ليتم كتابة النص هنا بدقة..."></textarea>
+                    <textarea id="final-text" placeholder="سأقوم بكتابة كل ما تقولينه هنا بدقة متناهية..."></textarea>
                 </div>
 
                 <div class="pdf-section">
-                    <h3><i class="fas fa-file-pdf"></i> تصدير منمّق (PDF)</h3>
+                    <h3><i class="fas fa-file-pdf"></i> تصدير الملف (PDF)</h3>
                     <div class="input-group">
-                        <input type="text" id="pdf-name" placeholder="اسم الملف">
-                        <button id="download-btn" class="btn success">تحميل الملف</button>
+                        <input type="text" id="pdf-name" placeholder="اكتبي اسم الملف هنا">
+                        <button id="download-btn" class="btn success">تحميل وتنسيق</button>
                     </div>
                 </div>
             </main>
 
             <footer>
-                <p>حقوق النشر محفوظة © 2026 - تم التطوير بواسطة سلمى طيبة اللملم</p>
+                <p>تم التطوير بحب وإتقان بواسطة سلمى طيبة اللملم © 2026</p>
             </footer>
         </div>
     </div>
