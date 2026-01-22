@@ -1,8 +1,21 @@
+/* =========================================
+   إعدادات الألوان والخطوط (ثيم واحة الهدوء)
+   ========================================= */
 :root {
-    --primary-color: #2c3e50;
-    --accent-color: #d35400; /* لون برتقالي صحراوي يليق بغرداية */
-    --bg-color: #fdfbf7; /* لون كريمي فاتح */
-    --white: #ffffff;
+    /* ألوان مستوحاة من الراحة النفسية */
+    --primary-color: #60a3bc;    /* أزرق مخضر هادئ (Teal) - للثقة والهدوء */
+    --accent-color: #e58e26;     /* برتقالي دافئ (غروب الشمس) - للأزرار المهمة */
+    --text-main: #2f3640;        /* رمادي غامق للنصوص (أريح للعين من الأسود) */
+    --text-secondary: #718093;   /* رمادي فاتح للعناوين الفرعية */
+    
+    /* الخلفيات */
+    --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* تدرج لوني ناعم جداً */
+    --card-bg: rgba(255, 255, 255, 0.85); /* خلفية شبه شفافة (زجاجية) */
+    
+    /* الظلال */
+    --soft-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* ظل ناعم جداً */
+    
+    /* الخط */
     --font-main: 'Cairo', sans-serif;
 }
 
@@ -14,153 +27,249 @@
 }
 
 body {
-    background-color: #ecf0f1;
-    color: var(--primary-color);
-    padding: 20px;
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    padding: 30px;
     min-height: 100vh;
+    line-height: 1.6;
 }
 
-/* تقسيم الصفحة */
+/* التنسيق العام للحاويات */
 .main-wrapper {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 25px;
     max-width: 1200px;
     margin: 0 auto;
     align-items: flex-start;
 }
 
-/* الشريط الجانبي (للساعة والصلاة) */
+/* =========================================
+   الشريط الجانبي (بطاقات عائمة)
+   ========================================= */
 .sidebar {
     flex: 1;
-    min-width: 280px;
+    min-width: 300px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
 .clock-card, .prayer-card {
-    background: var(--white);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    background: var(--card-bg);
+    backdrop-filter: blur(10px); /* تأثير الزجاج الضبابي */
+    padding: 25px;
+    border-radius: 20px; /* حواف دائرية ناعمة */
+    box-shadow: var(--soft-shadow);
     text-align: center;
-    border-top: 5px solid var(--accent-color);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: transform 0.3s ease;
+}
+
+.clock-card:hover, .prayer-card:hover {
+    transform: translateY(-5px); /* حركة طفيفة عند المرور */
+}
+
+.clock-card h3, .prayer-card h3 {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    opacity: 0.9;
 }
 
 .digital-clock {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--text-main);
+    letter-spacing: 2px;
     margin: 10px 0;
-    font-variant-numeric: tabular-nums; /* ثبات الأرقام */
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+}
+
+.date-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
 }
 
 .prayer-card ul {
     list-style: none;
-    margin-top: 15px;
+    margin-top: 20px;
     padding: 0;
 }
 
 .prayer-card li {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
+    padding: 12px 10px;
+    border-bottom: 1px dashed #dcdde1;
     font-size: 1.1rem;
+    color: var(--text-main);
 }
 
-/* المحتوى الرئيسي */
+.prayer-card li:last-child {
+    border-bottom: none;
+}
+
+/* =========================================
+   المحتوى الرئيسي
+   ========================================= */
 .container {
     flex: 2;
     min-width: 300px;
-    background: var(--white);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: var(--soft-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
 header h1 {
-    color: var(--accent-color);
-    font-size: 1.8rem;
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    margin-bottom: 5px;
 }
 
+header p {
+    color: var(--text-secondary);
+}
+
+/* الأزرار العصرية */
 .controls {
-    margin: 20px 0;
     display: flex;
-    gap: 10px;
     justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
 }
 
 .btn {
-    padding: 10px 20px;
+    padding: 12px 30px;
     border: none;
-    border-radius: 8px;
+    border-radius: 50px; /* أزرار بيضاوية كاملة */
     cursor: pointer;
     font-size: 1rem;
+    font-weight: 600;
     color: white;
-    transition: 0.3s;
-    font-family: var(--font-main);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.btn:hover { opacity: 0.9; transform: translateY(-2px); }
-.primary { background: var(--primary-color); }
-.danger { background: #c0392b; }
-.secondary { background: #7f8c8d; }
-.success { background: #27ae60; }
-.btn:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; }
+.btn:active { transform: scale(0.95); }
+
+/* ألوان الأزرار الهادئة */
+.primary { 
+    background: linear-gradient(135deg, #60a3bc 0%, #3c6382 100%); 
+}
+.primary:hover { box-shadow: 0 8px 20px rgba(96, 163, 188, 0.4); }
+
+.danger { 
+    background: linear-gradient(135deg, #e55039 0%, #b71540 100%); 
+}
+
+.secondary { 
+    background: linear-gradient(135deg, #a4b0be 0%, #747d8c 100%); 
+}
+
+.success { 
+    background: linear-gradient(135deg, #78e08f 0%, #38ada9 100%); 
+}
+
+.btn:disabled {
+    background: #dcdde1;
+    color: #95a5a6;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* منطقة النص */
+.text-area-container {
+    position: relative;
+    margin-bottom: 30px;
+}
 
 textarea {
     width: 100%;
-    height: 250px;
-    padding: 15px;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    font-size: 1.2rem;
+    height: 300px;
+    padding: 20px;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    background-color: #f1f2f6; /* لون رمادي فاتح جداً للخلفية */
+    font-size: 1.3rem;
+    color: var(--text-main);
     resize: vertical;
-    background-color: #fafafa;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
 }
 
-textarea:focus { border-color: var(--accent-color); outline: none; }
+textarea:focus {
+    outline: none;
+    background-color: #ffffff;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(96, 163, 188, 0.1);
+}
 
 .status-text {
     text-align: center;
-    color: #e67e22;
-    font-weight: bold;
-    margin-bottom: 10px;
-    height: 25px;
+    color: var(--accent-color);
+    font-weight: 600;
+    margin-bottom: 15px;
+    min-height: 25px;
 }
 
+/* قسم الـ PDF */
 .pdf-section {
-    margin-top: 25px;
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px dashed #bdc3c7;
+    background: #f7f1e3; /* لون بيج دافئ جداً */
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px dashed #d1ccc0;
+}
+
+.pdf-section h3 {
+    color: #84817a;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
 }
 
 .input-group {
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 15px;
 }
 
 input[type="text"] {
     flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 12px 20px;
+    border: 1px solid #dcdde1;
+    border-radius: 50px;
+    outline: none;
+    transition: 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: var(--accent-color);
 }
 
 footer {
     text-align: center;
-    margin-top: 30px;
+    margin-top: 40px;
     font-size: 0.9rem;
-    color: #7f8c8d;
+    color: var(--text-secondary);
+    opacity: 0.7;
 }
 
-/* تحسين العرض على الجوال */
+/* تحسينات للجوال */
 @media (max-width: 768px) {
+    body { padding: 15px; }
     .main-wrapper { flex-direction: column; }
     .sidebar, .container { width: 100%; }
+    .input-group { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
 }
