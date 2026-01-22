@@ -1,116 +1,181 @@
-// التحقق من دعم المتصفح لخاصية التعرف على الصوت
-if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert("عذراً، متصفحك لا يدعم خاصية تحويل الصوت إلى نص. يرجى استخدام Google Chrome.");
-} else {
-    // إعداد متغيرات التعرف على الصوت
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // ==========================================
+    // 1. إعدادات الساعة والتاريخ
+    // ==========================================
+    function updateClock() {
+        const now = new Date();
+        
+        // الوقت
+        const timeString = now.toLocaleTimeString('ar-DZ', { hour12: false });
+        document.getElementById('digital-clock').textContent = timeString;
 
-    // إعدادات اللغة والخصائص
-    recognition.lang = 'ar-SA'; // اللغة العربية (السعودية) - يمكن تغييرها لـ ar-EG وغيرها
-    recognition.continuous = true; // الاستمرار في الاستماع وعدم التوقف عند السكتة
-    recognition.interimResults = true; // إظهار النتائج أثناء التحدث
+        // التاريخ
+        const dateString = now.toLocaleDateString('ar-DZ', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        });
+        document.getElementById('current-date').textContent = dateString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock(); // تشغيل فوري
 
-    // عناصر واجهة المستخدم
-    const startBtn = document.getElementById('start-btn');
-    const stopBtn = document.getElementById('stop-btn');
-    const clearBtn = document.getElementById('clear-btn');
-    const statusText = document.getElementById('status');
-    const finalTextArea = document.getElementById('final-text');
-    const downloadBtn = document.getElementById('download-btn');
-    const pdfNameInput = document.getElementById('pdf-name');
+    // ==========================================
+    // 2. جلب مواقيت الصلاة (ولاية غرداية)
+    // ==========================================
+    async function getPrayerTimes() {
+        const prayerList = document.getElementById('prayer-list');
+        try {
+            // استخدام API Aladhan لمدينة غرداية، الجزائر
+            const response = await axios.get('https://api.aladhan.com/v1/timingsByCity', {
+                params: {
+                    city: 'Ghardaia',
+                    country: 'Algeria',
+                    method: 2 // الهيئة العامة للمساحة المصرية (أو يمكن استخدام الافتراضي)
+                }
+            });
 
-    let finalTranscript = ''; // تخزين النص النهائي
+            const timings = response.data.data.timings;
+            // تصفية وعرض الصلوات الخمس + الشروق
+            const prayersToShow = {
+                'Fajr': 'الفجر',
+                'Sunrise': 'الشروق',
+                'Dhuhr': 'الظهر',
+                'Asr': 'العصر',
+                'Maghrib': 'المغرب',
+                'Isha': 'العشاء'
+            };
 
-    // --- وظائف التعرف على الصوت ---
-
-    // عند بدء التسجيل
-    recognition.onstart = () => {
-        statusText.textContent = "جاري الاستماع... يرجى التحدث الآن";
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        startBtn.classList.add('recording-pulse'); // تأثير بصري (اختياري)
-    };
-
-    // عند توقف التسجيل
-    recognition.onend = () => {
-        statusText.textContent = "توقف التسجيل. اضغط 'ابدأ' للمتابعة.";
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-    };
-
-    // عند حدوث خطأ
-    recognition.onerror = (event) => {
-        statusText.textContent = "حدث خطأ: " + event.error;
-        stopBtn.click();
-    };
-
-    // المعالج الأساسي: عند التقاط الصوت وتحويله لنص
-    recognition.onresult = (event) => {
-        let interimTranscript = ''; // النص المؤقت
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript + ' ';
-            } else {
-                interimTranscript += event.results[i][0].transcript;
+            prayerList.innerHTML = ''; // مسح "جاري التحميل"
+            
+            for (let [key, name] of Object.entries(prayersToShow)) {
+                let time = timings[key];
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${name}</span> <span>${time}</span>`;
+                prayerList.appendChild(li);
             }
+
+        } catch (error) {
+            prayerList.innerHTML = '<li style="color:red">فشل جلب المواقيت. تأكد من الإنترنت.</li>';
+            console.error(error);
         }
+    }
+    getPrayerTimes();
 
-        // تحديث مربع النص
-        finalTextArea.value = finalTranscript + interimTranscript;
-    };
+    // ==========================================
+    // 3. تحويل الصوت إلى نص (محسن وسريع)
+    // ==========================================
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    // --- أزرار التحكم ---
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ar-DZ'; // لهجة جزائرية/عربية
+        recognition.continuous = true;
+        recognition.interimResults = true; // السرعة في العرض
 
-    startBtn.addEventListener('click', () => {
-        // إذا كان هناك نص سابق، نكمله ولا نمسحه إلا إذا ضغط المستخدم "مسح"
-        finalTranscript = finalTextArea.value; 
-        if(finalTranscript.length > 0 && !finalTranscript.endsWith(' ')) {
-            finalTranscript += ' ';
-        }
-        recognition.start();
-    });
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const statusText = document.getElementById('status');
+        const textArea = document.getElementById('final-text');
 
-    stopBtn.addEventListener('click', () => {
-        recognition.stop();
-    });
+        let finalTranscript = '';
 
-    clearBtn.addEventListener('click', () => {
-        finalTextArea.value = '';
-        finalTranscript = '';
-        statusText.textContent = "تم مسح النص.";
-    });
+        recognition.onstart = () => {
+            statusText.textContent = "جاري التسجيل... (الميكروفون نشط)";
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            statusText.style.color = "red";
+        };
 
-    // --- وظيفة تحميل PDF ---
+        recognition.onend = () => {
+            statusText.textContent = "توقف التسجيل.";
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusText.style.color = "#e67e22";
+        };
 
-    downloadBtn.addEventListener('click', () => {
-        const textContent = finalTextArea.value;
-        const fileName = pdfNameInput.value || 'document'; // الاسم الافتراضي
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript + ' ';
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            textArea.value = finalTranscript + interimTranscript;
+            // التمرير التلقائي للأسفل
+            textArea.scrollTop = textArea.scrollHeight;
+        };
 
-        if (textContent.trim() === '') {
-            alert('لا يوجد نص لتحميله!');
+        startBtn.onclick = () => {
+            finalTranscript = textArea.value; 
+            if(finalTranscript.length > 0 && !finalTranscript.endsWith(' ')) finalTranscript += ' ';
+            recognition.start();
+        };
+        stopBtn.onclick = () => recognition.stop();
+        clearBtn.onclick = () => {
+            textArea.value = '';
+            finalTranscript = '';
+        };
+
+    } else {
+        alert("متصفحك لا يدعم هذه الميزة، يرجى استخدام Google Chrome");
+    }
+
+    // ==========================================
+    // 4. تصدير PDF منمق واحترافي
+    // ==========================================
+    document.getElementById('download-btn').addEventListener('click', () => {
+        const textContent = document.getElementById('final-text').value;
+        const fileName = document.getElementById('pdf-name').value || 'ملف-صوتي-محول';
+
+        if (!textContent.trim()) {
+            alert("لا يوجد نص لتحويله!");
             return;
         }
 
-        // إعدادات ملف PDF
+        // تصميم محتوى الـ PDF الداخلي (HTML & CSS مضمن)
+        // الخلفية: لون بيج فاتح (Munaqqa) + إطار
+        // الخط: 14pt Cairo
         const element = document.createElement('div');
-        // نضيف النص داخل عنصر div مع تنسيق مناسب للغة العربية في الـ PDF
-        element.innerHTML = `<div style="font-family: Arial; direction: rtl; text-align: right; font-size: 18px; line-height: 1.6;">
-            <h2 style="text-align: center; color: #4a90e2;">موقع سلمى طيبة اللملم</h2>
-            <hr style="margin-bottom: 20px;">
-            <p>${textContent.replace(/\n/g, '<br>')}</p>
-        </div>`;
+        element.innerHTML = `
+            <div style="
+                font-family: 'Cairo', sans-serif; 
+                direction: rtl; 
+                padding: 40px; 
+                background-color: #faf9f6; 
+                border: 2px solid #d35400; 
+                min-height: 800px;
+                color: #000;
+            ">
+                <div style="text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #d35400; margin:0;">مشروع سلمى طيبة اللملم</h1>
+                    <p style="color: #7f8c8d; margin-top:5px;">التاريخ: ${new Date().toLocaleDateString('ar-DZ')}</p>
+                </div>
+                
+                <div style="
+                    font-size: 14pt; 
+                    line-height: 1.8; 
+                    text-align: justify;
+                ">
+                    ${textContent.replace(/\n/g, '<br>')}
+                </div>
+
+                <div style="margin-top: 50px; text-align: left; font-size: 10pt; color: #aaa;">
+                    تم الإنشاء تلقائياً بواسطة تطبيق سلمى - 2026
+                </div>
+            </div>
+        `;
 
         const opt = {
-            margin:       1,
+            margin:       0, // الهوامش صفر لأننا وضعنا padding داخلي
             filename:     `${fileName}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 }, // دقة عالية
-            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // تحويل الـ HTML إلى PDF ثم تحميله
         html2pdf().set(opt).from(element).save();
     });
-}
+});
