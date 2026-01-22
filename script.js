@@ -34,13 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 prayerList.appendChild(li);
             }
         } catch (error) {
-            prayerList.innerHTML = '<li style="color:red">فشل جلب المواقيت</li>';
+            prayerList.innerHTML = '<li style="color:red">تأكد من الإنترنت لجلب المواقيت</li>';
         }
     }
     getPrayerTimes();
 
     // ==========================================
-    // 3. إذاعة القرآن الكريم (البث المباشر)
+    // 3. إذاعة القرآن الكريم (كود المعالجة والإصلاح)
     // ==========================================
     const radioBtn = document.getElementById('radio-btn');
     const quranPlayer = document.getElementById('quran-player');
@@ -48,21 +48,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveIndicator = document.getElementById('live-indicator');
     const soundWave = document.getElementById('sound-wave');
     const icon = radioBtn.querySelector('i');
+    
     let isRadioPlaying = false;
+    quranPlayer.volume = 1.0; 
 
     radioBtn.addEventListener('click', () => {
         if (!isRadioPlaying) {
+            radioStatus.textContent = "جاري الاتصال بالبث...";
+            
             quranPlayer.play().then(() => {
                 isRadioPlaying = true;
                 icon.classList.remove('fa-play');
                 icon.classList.add('fa-pause');
                 radioBtn.classList.add('playing');
-                radioStatus.textContent = "جاري الاستماع للقرآن الكريم...";
+                
+                radioStatus.textContent = "بث مباشر - استمع بقلب خاشع";
+                radioStatus.style.color = "var(--primary-color)";
                 liveIndicator.classList.add('active');
                 soundWave.classList.remove('hidden');
-            }).catch(e => {
-                console.error(e);
-                alert("تأكد من اتصالك بالإنترنت لتشغيل البث");
+            }).catch(error => {
+                console.error("خطأ الراديو:", error);
+                radioStatus.textContent = "البث غير متاح حالياً (تحقق من الإنترنت)";
+                radioStatus.style.color = "red";
             });
         } else {
             quranPlayer.pause();
@@ -70,14 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
             icon.classList.remove('fa-pause');
             icon.classList.add('fa-play');
             radioBtn.classList.remove('playing');
+            
             radioStatus.textContent = "اضغط للاستماع بقلب خاشع";
+            radioStatus.style.color = "var(--text-secondary)";
             liveIndicator.classList.remove('active');
             soundWave.classList.add('hidden');
         }
     });
 
     // ==========================================
-    // 4. تحويل الصوت إلى نص (المنطق الذكي)
+    // 4. تحويل الصوت إلى نص (الذكي - بدون توقف)
     // ==========================================
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -131,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             textArea.scrollTop = textArea.scrollHeight;
         };
 
-        // إعادة التشغيل التلقائي عند السكوت
+        // إعادة التشغيل التلقائي عند السكوت (الحلقة الذكية)
         recognition.onend = () => {
             if (isRecording) {
                 console.log("إعادة تشغيل الميكروفون...");
@@ -140,6 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
             }
+        };
+        
+        // معالجة أخطاء الميكروفون
+        recognition.onerror = (event) => {
+            if(event.error === 'no-speech') { return; } // تجاهل الصمت
+            console.error("خطأ ميكروفون:", event.error);
         };
 
         clearBtn.onclick = () => {
