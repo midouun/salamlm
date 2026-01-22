@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // ==========================================
-    // 1. الساعة والتاريخ ومواقيت الصلاة
+    // 1. الساعة والتاريخ
     // ==========================================
     function updateClock() {
         const now = new Date();
@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateClock, 1000);
     updateClock();
 
+    // ==========================================
+    // 2. مواقيت الصلاة (غرداية)
+    // ==========================================
     async function getPrayerTimes() {
         const prayerList = document.getElementById('prayer-list');
         try {
@@ -31,117 +34,114 @@ document.addEventListener('DOMContentLoaded', () => {
                 prayerList.appendChild(li);
             }
         } catch (error) {
-            prayerList.innerHTML = '<li style="color:red">تأكد من الاتصال بالإنترنت</li>';
+            prayerList.innerHTML = '<li style="color:red">فشل جلب المواقيت</li>';
         }
     }
     getPrayerTimes();
 
     // ==========================================
-    // 2. المحرك الذكي لتحويل الصوت (الإصلاح الجذري)
+    // 3. إذاعة القرآن الكريم (البث المباشر)
+    // ==========================================
+    const radioBtn = document.getElementById('radio-btn');
+    const quranPlayer = document.getElementById('quran-player');
+    const radioStatus = document.getElementById('radio-status');
+    const liveIndicator = document.getElementById('live-indicator');
+    const soundWave = document.getElementById('sound-wave');
+    const icon = radioBtn.querySelector('i');
+    let isRadioPlaying = false;
+
+    radioBtn.addEventListener('click', () => {
+        if (!isRadioPlaying) {
+            quranPlayer.play().then(() => {
+                isRadioPlaying = true;
+                icon.classList.remove('fa-play');
+                icon.classList.add('fa-pause');
+                radioBtn.classList.add('playing');
+                radioStatus.textContent = "جاري الاستماع للقرآن الكريم...";
+                liveIndicator.classList.add('active');
+                soundWave.classList.remove('hidden');
+            }).catch(e => {
+                console.error(e);
+                alert("تأكد من اتصالك بالإنترنت لتشغيل البث");
+            });
+        } else {
+            quranPlayer.pause();
+            isRadioPlaying = false;
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+            radioBtn.classList.remove('playing');
+            radioStatus.textContent = "اضغط للاستماع بقلب خاشع";
+            liveIndicator.classList.remove('active');
+            soundWave.classList.add('hidden');
+        }
+    });
+
+    // ==========================================
+    // 4. تحويل الصوت إلى نص (المنطق الذكي)
     // ==========================================
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         
-        // إعدادات الدقة
         recognition.lang = 'ar-DZ'; 
-        recognition.continuous = true; // الاستمرار
-        recognition.interimResults = true; // النتائج الفورية
+        recognition.continuous = true; 
+        recognition.interimResults = true; 
 
-        // المتغيرات
         const startBtn = document.getElementById('start-btn');
         const stopBtn = document.getElementById('stop-btn');
         const clearBtn = document.getElementById('clear-btn');
         const statusText = document.getElementById('status');
         const textArea = document.getElementById('final-text');
 
-        let finalTranscript = ''; // المخزن الرئيسي للنص المعتمد
-        let isRecording = false;  // مفتاح التحكم اليدوي (مهم جداً لمنع التوقف)
+        let finalTranscript = ''; 
+        let isRecording = false;  
 
-        // --- عند بدء التسجيل ---
         startBtn.onclick = () => {
-            if (isRecording) return; // منع الضغط المزدوج
-            
-            isRecording = true; // المستخدم يريد التسجيل
-            
-            // تحديث المخزن بالنص الموجود حالياً في الصندوق (حتى لا نفقده)
+            if (isRecording) return; 
+            isRecording = true; 
             finalTranscript = textArea.value;
-            if(finalTranscript.length > 0 && !finalTranscript.endsWith(' ')) {
-                finalTranscript += ' ';
-            }
-
+            if(finalTranscript.length > 0 && !finalTranscript.endsWith(' ')) finalTranscript += ' ';
             recognition.start();
-            
-            // تحديث الواجهة
-            statusText.textContent = "جاري الاستماع... (لن يتوقف حتى تضغطي إيقاف)";
+            statusText.textContent = "الميكروفون نشط.. لن يتوقف حتى تضغطي إيقاف";
             statusText.style.color = "#e58e26";
             startBtn.disabled = true;
             stopBtn.disabled = false;
         };
 
-        // --- عند إيقاف التسجيل يدوياً ---
         stopBtn.onclick = () => {
-            isRecording = false; // المستخدم يريد التوقف
+            isRecording = false; 
             recognition.stop();
-            
             statusText.textContent = "تم إيقاف التسجيل.";
             statusText.style.color = "#2f3640";
             startBtn.disabled = false;
             stopBtn.disabled = true;
         };
 
-        // --- المعالجة الذكية للنص (منع التكرار) ---
         recognition.onresult = (event) => {
-            let interimTranscript = ''; // نص مؤقت لهذه الجملة فقط
-
+            let interimTranscript = ''; 
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                const transcriptSegment = event.results[i][0].transcript;
-
                 if (event.results[i].isFinal) {
-                    // إذا تأكد المتصفح من النص، نضيفه للمخزن النهائي
-                    finalTranscript += transcriptSegment + ' ';
+                    finalTranscript += event.results[i][0].transcript + ' ';
                 } else {
-                    // إذا كان النص لا يزال قيد المعالجة
-                    interimTranscript += transcriptSegment;
+                    interimTranscript += event.results[i][0].transcript;
                 }
             }
-
-            // العرض: النص الثابت + النص المؤقت الحالي فقط
             textArea.value = finalTranscript + interimTranscript;
-            
-            // التمرير للأسفل
             textArea.scrollTop = textArea.scrollHeight;
         };
 
-        // --- الحل السحري لمنع التوقف التلقائي ---
+        // إعادة التشغيل التلقائي عند السكوت
         recognition.onend = () => {
             if (isRecording) {
-                // إذا توقف المتصفح (بسبب السكوت) ولكن المستخدم لم يضغط "إيقاف"
-                // نعيد تشغيله فوراً
-                console.log("إعادة تشغيل الميكروفون تلقائياً...");
+                console.log("إعادة تشغيل الميكروفون...");
                 recognition.start();
             } else {
-                // توقف حقيقي
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
             }
         };
 
-        // معالجة الأخطاء (مثل انقطاع النت)
-        recognition.onerror = (event) => {
-            console.error("Speech Error:", event.error);
-            if (event.error === 'no-speech') {
-                // تجاهل خطأ عدم وجود صوت واعمل إعادة تشغيل
-                return; 
-            }
-            if (event.error === 'not-allowed') {
-                statusText.textContent = "تم رفض الوصول للميكروفون!";
-                isRecording = false;
-            }
-        };
-
-        // زر المسح
         clearBtn.onclick = () => {
             textArea.value = '';
             finalTranscript = '';
@@ -152,11 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 3. تصدير PDF (نفس الكود السابق الممتاز)
+    // 5. تصدير PDF بتنسيق منمق
     // ==========================================
     document.getElementById('download-btn').addEventListener('click', () => {
         const textContent = document.getElementById('final-text').value;
-        const fileName = document.getElementById('pdf-name').value || 'ملف-صوتي-محول';
+        const fileName = document.getElementById('pdf-name').value || 'وثيقة-صوتية';
 
         if (!textContent.trim()) {
             alert("لا يوجد نص لتحويله!");
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${textContent.replace(/\n/g, '<br>')}
                 </div>
                 <div style="margin-top: 50px; text-align: left; font-size: 10pt; color: #aaa;">
-                    تم الإنشاء تلقائياً بواسطة تطبيق سلمى - 2026
+                    تم الإنشاء في 2026 - جميع الحقوق محفوظة
                 </div>
             </div>
         `;
